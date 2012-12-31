@@ -246,8 +246,7 @@ myManageHook =
     , isDialog     -?> doCenterFloat
     ]
     <+> composeAll
-    [ testTrace --> doFloat
-    , className =? "Mumble"                  --> doShift "steam"
+    [ className =? "Mumble"                  --> doShift "steam"
     , className =? "Steam"                   --> doShift "steam"
     , title     =? "Wine System Tray"        --> doHideIgnore
     , title     =? "Emacs TEXTAREA"          --> doCenterFloat
@@ -268,9 +267,6 @@ myManageHook =
     <+> manageDocks
     where
         printable = return . (> 32) . ord
-        testTrace = do n <- title
-                       trace n
-                       return False
         command   = stringProperty "WM_COMMAND" >>= filterM printable
         role      = stringProperty "WM_WINDOW_ROLE"
         shiftV    = doF . liftM2 (.) W.greedyView W.shift
