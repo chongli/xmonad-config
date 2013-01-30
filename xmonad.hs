@@ -65,7 +65,9 @@ myModMask       = mod4Mask
 --
 -- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
 --
-myWorkspaces    = ["media", "web", "steam", "emacs", "mpd", "gimp"] ++ map show [5..9]
+myWorkspaces    = names ++ map show [length names..9]
+  where
+    names = ["media", "web", "steam", "mpd", "gimp"]
 
 -- Border colors for unfocused and focused windows, respectively.
 --
@@ -147,7 +149,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm .|. shiftMask, xK_q     ), io exitSuccess)
 
     -- Restart xmonad
-    , ((modm              , xK_q     ), spawn "xmonad --recompile; xmonad --restart")
+    , ((modm              , xK_q     ), spawn "xmonad --restart")
     ]
     ++
 
@@ -252,7 +254,9 @@ myManageHook =
     , title     =? "Emacs TEXTAREA"          --> doCenterFloat
     , className =? "Pidgin"                  --> doShift "steam"
     , appName   =? "brogue"                  --> doFull  "media"
-    , className =? "Dredmor-x86"             --> doFull  "media"
+    , title     =? "Dungeons of Dredmor"     --> doFull  "media"
+    , className =? "Vlc"                     --> doFull  "media"
+    , className =? "t-engine"                --> doFull  "media"
     , appName   =? "spelunky.exe"            --> doFull  "media"
     , appName   =? "AIWar.exe"               --> doFull  "media"
     , appName   =? "SWT"                     --> doFull  "media"
