@@ -6,36 +6,35 @@
 --
 -- Normally, you'd only override those defaults you care about.
 --
-import Control.Monad (filterM)
+
+import Control.Monad (liftM2, filterM)
 import Data.Char (ord)
-
-import XMonad
-
-import XMonad.Hooks.DynamicLog
-import XMonad.Hooks.EwmhDesktops
-import XMonad.Hooks.InsertPosition
-import XMonad.Hooks.ManageDocks
-import XMonad.Hooks.ManageHelpers
-import XMonad.Hooks.Place
-import XMonad.Hooks.SetWMName
-
-import XMonad.Layout.NoBorders
-import XMonad.Layout.PerWorkspace
-import XMonad.Layout.ComboP
-import XMonad.Layout.Grid
-import XMonad.Layout.TwoPane
-import XMonad.Layout.Renamed
-
-
-import XMonad.Util.Run (spawnPipe)
-
-import Control.Monad (liftM2)
 import Data.Monoid (mconcat)
 import System.Exit
 import System.IO (hPutStrLn)
+import Data.Map (fromList)
 
+import XMonad
+
+import XMonad.Actions.WindowNavigation
+
+import XMonad.Hooks.DynamicLog
+import XMonad.Hooks.EwmhDesktops
+import XMonad.Hooks.ManageDocks
+import XMonad.Hooks.ManageHelpers
+import XMonad.Hooks.SetWMName
+
+import XMonad.Layout.ComboP
+import XMonad.Layout.NoBorders
+import XMonad.Layout.PerWorkspace
+import XMonad.Layout.Renamed
+import XMonad.Layout.Tabbed
+import XMonad.Layout.TwoPane
+
+
+import XMonad.Util.Run (spawnPipe)
 import qualified XMonad.StackSet as W
-import qualified Data.Map        as M
+
 
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
@@ -77,7 +76,7 @@ myFocusedBorderColor = "#303030"
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
 --
-myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
+myKeys conf@(XConfig {XMonad.modMask = modm}) = fromList $
 
     -- launch a terminal
     [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
@@ -106,10 +105,10 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     , ((modm,               xK_n     ), refresh)
 
     -- Move focus to the next window
-    , ((modm,               xK_j     ), windows W.focusDown)
+    -- , ((modm,               xK_j     ), windows W.focusDown)
 
     -- Move focus to the previous window
-    , ((modm,               xK_k     ), windows W.focusUp  )
+    -- , ((modm,               xK_k     ), windows W.focusUp  )
 
     -- Move focus to the master window
     --, ((modm,               xK_m     ), windows W.focusMaster  )
@@ -120,14 +119,19 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
     -- Swap the focused window with the next window
     , ((modm .|. shiftMask, xK_j     ), windows W.swapDown  )
 
-    -- Swap the focused window with the previous window
+    -- -- Swap the focused window with the previous window
     , ((modm .|. shiftMask, xK_k     ), windows W.swapUp    )
 
+    -- , ((modm,               xK_l     ), sendMessage $ Move R)
+    -- , ((modm,               xK_h     ), sendMessage $ Move L)
+    -- , ((modm,               xK_k     ), sendMessage $ Move U)
+    -- , ((modm,               xK_j     ), sendMessage $ Move D)
+
     -- Shrink the master area
-    , ((modm,               xK_h     ), sendMessage Shrink)
+    , ((modm .|. shiftMask, xK_h     ), sendMessage Shrink)
 
     -- Expand the master area
-    , ((modm,               xK_l     ), sendMessage Expand)
+    , ((modm .|. shiftMask, xK_l     ), sendMessage Expand)
 
     -- Push window back into tiling
     , ((modm,               xK_t     ), withFocused $ windows . W.sink)
@@ -174,7 +178,7 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) = M.fromList $
 ------------------------------------------------------------------------
 -- Mouse bindings: default actions bound to mouse events
 --
-myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList
+myMouseBindings (XConfig {XMonad.modMask = modm}) = fromList
 
     -- mod-button1, Set the window to floating mode and move by dragging
     [ ((modm, button1), (\w -> focus w >> mouseMoveWindow w
@@ -203,6 +207,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList
 --
 myLayout = onWorkspace "steam" steamL
          $ onWorkspace "media" media
+         $ onWorkspace "web" webL
            basic
   where
     --gimpLayout = combineTwoP (TwoPane 0.04 0.82) (tabbedLayout) (Full) (Not (Role "gimp-toolbox"))
@@ -213,7 +218,13 @@ myLayout = onWorkspace "steam" steamL
     ims     = combineTwoP twoP friends pidgin (And (ClassName "Steam") (Not (Title "Steam")))
     friends = combineTwoP twoP Full Full (And (ClassName "Steam") (Title "Friends"))
     pidgin  = combineTwoP twoP Full Full (And (ClassName "Pidgin") (Not (Title "Buddy List")))
-    -- default tiling algorithm partitions the screen into two panes
+
+    webL    = avoidStruts . renamed [Replace "Web"] $ web
+    web     = combineTwoP twoP (tabbedBottom shrinkText theme)
+              terms (ClassName "Chromium")
+    terms   = combineTwoP (Mirror $ TwoPane delta $ 229/320)
+                          (tabbedAlways shrinkText theme) Full (Not (Resource "urxvt-iris"))
+
     tiled   = Tall nmaster delta ratio
     twoP    = TwoPane delta ratio
     mirror  = Mirror twoP
@@ -227,6 +238,21 @@ myLayout = onWorkspace "steam" steamL
     -- Percent of screen to increment by when resizing panes
     delta   = 3/100
 
+-- Theme for tabs
+theme = defaultTheme
+        { activeColor         = black
+        , inactiveColor       = black
+        , activeBorderColor   = black
+        , inactiveBorderColor = black
+        , activeTextColor     = green
+        , inactiveTextColor   = pink
+        }
+  where
+    black  = "#000000"
+    green  = "#afd787"
+    pink   = "#d7afd7"
+    orange = "#d7af87"
+    blue   = "#87afd7"
 ------------------------------------------------------------------------
 -- Window rules:
 
@@ -338,7 +364,9 @@ main = do
                 , "nc-mpc"
                 ]
     h <- spawnPipe myStatusBar
-    xmonad $ defaults { logHook = myLogHook h }
+    myConfig <- withWindowNavigation (xK_k, xK_h, xK_j, xK_l)
+              $ defaults { logHook = myLogHook h }
+    xmonad myConfig
 
 -- A structure containing your configuration settings, overriding
 -- fields in the default config. Any you don't override, will
