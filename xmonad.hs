@@ -282,6 +282,7 @@ myManageHook =
     , appName   =? "brogue"                  --> doFull  "media"
     , title     =? "Dungeons of Dredmor"     --> doFull  "media"
     , className =? "Vlc"                     --> doFull  "media"
+    , className =? "Angband"                 --> doShift "gimp"
     , className =? "t-engine"                --> doFull  "media"
     , appName   =? "spelunky.exe"            --> doFull  "media"
     , appName   =? "AIWar.exe"               --> doFull  "media"
