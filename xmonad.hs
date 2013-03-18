@@ -13,6 +13,7 @@ import Data.Monoid (mconcat)
 import System.Exit
 import System.IO (hPutStrLn)
 import Data.Map (fromList)
+--import Data.Maybe (catMaybes)
 
 import XMonad
 
@@ -76,10 +77,19 @@ myFocusedBorderColor = "#303030"
 ------------------------------------------------------------------------
 -- Key bindings. Add, modify or remove key bindings here.
 --
-myKeys conf@(XConfig {XMonad.modMask = modm}) = fromList $
-
+myKeys conf@(XConfig {XMonad.modMask = modm}) =
+  --let traceCurrentTag = withWindowSet $ \ws -> trace ("currentTag: " ++ (W.currentTag ws))
+      --traceCurrentWin = withWindowSet $ \ws -> trace ("currentWin: " ++ (show (fromIntegral (maybe 0 id (W.peek ws)))))
+      --traceAllPids = withWindowSet $ \ws -> do res <- mapM (runQuery pid) (W.allWindows ws)
+                                               --names <- mapM (runQuery className) (W.allWindows ws)
+                                               --mapM_ (trace . show) $ zip names (map show (catMaybes res))
+  let jumpToTag = windows . W.greedyView
+      focusMast = windows W.focusMaster
+  in fromList $
     -- launch a terminal
-    [ ((modm .|. shiftMask, xK_Return), spawn $ XMonad.terminal conf)
+    [ ((modm .|. shiftMask, xK_Return), do jumpToTag "web"
+                                           focusMast
+                                           spawn "tmux neww")
 
     -- launch dmenu
     , ((modm,               xK_p     ), spawn "dmenu_run")
@@ -275,11 +285,13 @@ myManageHook =
     [ className =? "Mumble"                  --> doShift "steam"
     , className =? "Steam"                   --> doShift "steam"
     , title     =? "Wine System Tray"        --> doHideIgnore
+    , className =? "Epdfview"                --> doIgnore
     , title     =? "Emacs TEXTAREA"          --> doCenterFloat
     , className =? "Pidgin"                  --> doShift "steam"
     , appName   =? "brogue"                  --> doFull  "media"
     , title     =? "Dungeons of Dredmor"     --> doFull  "media"
     , className =? "Vlc"                     --> doFull  "media"
+    , className =? "mplayer2"                --> doFull  "media"
     , className =? "Angband"                 --> doShift "gimp"
     , className =? "t-engine"                --> doFull  "media"
     , appName   =? "spelunky.exe"            --> doFull  "media"
@@ -290,6 +302,7 @@ myManageHook =
     , command   =? "urxvt-ezsh-cncmpcpp"     --> doShift "mpd"
     , className =? "dwarftherapist"          --> doShift "gimp"
     , className =? "Gimp"                    --> doShift "gimp"
+    , title     =? "Aurora Preferences"      --> doFloat
     , title     =? "Task Manager - Chromium" --> doFloat
     , role      =? "pop-up"                  --> doFloat
     ]
