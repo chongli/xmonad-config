@@ -207,7 +207,7 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = fromList
 --
 myLayout = onWorkspace "steam" steamL
          $ onWorkspace "media" media
-         $ onWorkspace "web" webL
+         $ onWorkspace "web" basic
            basic
   where
     --gimpLayout = combineTwoP (TwoPane 0.04 0.82) (tabbedLayout) (Full) (Not (Role "gimp-toolbox"))
@@ -219,11 +219,9 @@ myLayout = onWorkspace "steam" steamL
     friends = combineTwoP twoP Full Full (And (ClassName "Steam") (Title "Friends"))
     pidgin  = combineTwoP twoP Full Full (And (ClassName "Pidgin") (Not (Title "Buddy List")))
 
-    webL    = avoidStruts . renamed [Replace "Web"] $ web
-    web     = combineTwoP twoP (tabbedBottom shrinkText theme)
-              terms (ClassName "Chromium")
-    terms   = combineTwoP (Mirror $ TwoPane delta $ 229/320)
-                          (tabbedAlways shrinkText theme) Full (Not (Resource "urxvt-iris"))
+    --webL    = avoidStruts . renamed [Replace "Web"] $ web
+    --web     = combineTwoP twoP (tabbedBottom shrinkText theme)
+              --tiled (Or (ClassName "Chromium") (ClassName "Aurora"))
 
     tiled   = Tall nmaster delta ratio
     twoP    = TwoPane delta ratio
@@ -316,14 +314,6 @@ myManageHook =
 myEventHook = mconcat [docksEventHook,fullscreenEventHook]
 
 ------------------------------------------------------------------------
--- Status bars and logging
-
--- Perform an arbitrary action on each internal state change or X evet.
--- See the 'XMonad.Hooks.DynamicLog' extension for examples.
---
-myLogHook h = dynamicLogWithPP myPP { ppOutput = hPutStrLn h }
-
-------------------------------------------------------------------------
 -- Startup hook
 
 -- Perform an arbitrary action each time xmonad starts or is restarted
@@ -331,13 +321,19 @@ myLogHook h = dynamicLogWithPP myPP { ppOutput = hPutStrLn h }
 -- per-workspace layout choices.
 --
 -- By default, do nothing.
-myStartupHook = setWMName "LG3D"
+myStartupHook conf = do setWMName "LG3D"
+                        windows . W.greedyView $ "web"
+                        mapM_ spawn [ "steam"
+                                    , "mumble"
+                                    , "pidgin"
+                                    , "nc-mpc"
+                                    , XMonad.terminal conf
+                                    ]
 
 ------------------------------------------------------------------------
 -- Status bar
 
 -- Command to start a statusbar when XMonad starts
---myStatusBar = "dzen2 -e '' -w 1400 -ta l -fn '-*-terminus-*-*-*-*-12-*-*-*-*-*-*-*' -bg black -fg #d3d7cf "
 myStatusBar = "xmobar"
 
 myPP = defaultPP { ppCurrent = xmobarColor green "" . wrap "[" "]"
@@ -359,14 +355,9 @@ myPP = defaultPP { ppCurrent = xmobarColor green "" . wrap "[" "]"
 --
 
 main = do
-    mapM_ spawn [ "steam"
-                , "mumble"
-                , "pidgin"
-                , "nc-mpc"
-                ]
     h <- spawnPipe myStatusBar
     myConfig <- withWindowNavigation (xK_k, xK_h, xK_j, xK_l)
-              $ defaults { logHook = myLogHook h }
+              $ defaults { logHook = dynamicLogWithPP myPP { ppOutput = hPutStrLn h } }
     xmonad myConfig
 
 -- A structure containing your configuration settings, overriding
@@ -376,17 +367,17 @@ main = do
 -- No need to modify this.
 --
 defaults = defaultConfig
-    {   terminal           = myTerminal
-    ,   focusFollowsMouse  = myFocusFollowsMouse
-    ,   borderWidth        = myBorderWidth
-    ,   modMask            = myModMask
-    ,   workspaces         = myWorkspaces
-    ,   normalBorderColor  = myNormalBorderColor
-    ,   focusedBorderColor = myFocusedBorderColor
-    ,   keys               = myKeys
-    ,   mouseBindings      = myMouseBindings
-    ,   layoutHook         = myLayout
-    ,   manageHook         = myManageHook
-    ,   handleEventHook    = myEventHook
-    ,   startupHook        = myStartupHook
+    { terminal           = myTerminal
+    , focusFollowsMouse  = myFocusFollowsMouse
+    , borderWidth        = myBorderWidth
+    , modMask            = myModMask
+    , workspaces         = myWorkspaces
+    , normalBorderColor  = myNormalBorderColor
+    , focusedBorderColor = myFocusedBorderColor
+    , keys               = myKeys
+    , mouseBindings      = myMouseBindings
+    , layoutHook         = myLayout
+    , manageHook         = myManageHook
+    , handleEventHook    = myEventHook
+    , startupHook        = myStartupHook defaults
     }
