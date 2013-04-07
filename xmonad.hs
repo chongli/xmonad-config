@@ -13,7 +13,6 @@ import Data.Monoid (mconcat)
 import System.Exit
 import System.IO (hPutStrLn)
 import Data.Map (fromList)
---import Data.Maybe (catMaybes)
 
 import XMonad
 
@@ -29,7 +28,6 @@ import XMonad.Layout.ComboP
 import XMonad.Layout.NoBorders
 import XMonad.Layout.PerWorkspace
 import XMonad.Layout.Renamed
-import XMonad.Layout.Tabbed
 import XMonad.Layout.TwoPane
 
 
@@ -40,21 +38,21 @@ import qualified XMonad.StackSet as W
 -- The preferred terminal program, which is used in a binding below and by
 -- certain contrib modules.
 --
-myTerminal      = "urxvt"
+myTerminal = "urxvt"
 
 -- Whether focus follows the mouse pointer.
 myFocusFollowsMouse = True
 
 -- Width of the window border in pixels.
 --
-myBorderWidth   = 1
+myBorderWidth = 1
 
 -- modMask lets you specify which modkey you want to use. The default
 -- is mod1Mask ("left alt").  You may also consider using mod3Mask
 -- ("right alt"), which does not conflict with emacs keybindings. The
 -- "windows key" is usually mod4Mask.
 --
-myModMask       = mod4Mask
+myModMask = mod4Mask
 
 -- The default number of workspaces (virtual screens) and their names.
 -- By default we use numeric strings, but any string may be used as a
@@ -65,7 +63,7 @@ myModMask       = mod4Mask
 --
 -- > workspaces = ["web", "irc", "code" ] ++ map show [4..9]
 --
-myWorkspaces    = names ++ map show [length names..9]
+myWorkspaces = names ++ map show [length names..9]
   where
     names = ["media", "web", "steam", "mpd", "gimp"]
 
@@ -246,21 +244,6 @@ myLayout = onWorkspace "steam" steamL
     -- Percent of screen to increment by when resizing panes
     delta   = 3/100
 
--- Theme for tabs
-theme = defaultTheme
-        { activeColor         = black
-        , inactiveColor       = black
-        , activeBorderColor   = black
-        , inactiveBorderColor = black
-        , activeTextColor     = green
-        , inactiveTextColor   = pink
-        }
-  where
-    black  = "#000000"
-    green  = "#afd787"
-    pink   = "#d7afd7"
-    orange = "#d7af87"
-    blue   = "#87afd7"
 ------------------------------------------------------------------------
 -- Window rules:
 
