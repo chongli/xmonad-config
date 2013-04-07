@@ -10,6 +10,7 @@
 import Control.Monad (liftM2, filterM)
 import Data.Char (ord)
 import Data.Monoid (mconcat)
+import System.Posix.Types ()
 import System.Exit
 import System.IO (hPutStrLn)
 import Data.Map (fromList)
@@ -76,18 +77,16 @@ myFocusedBorderColor = "#303030"
 -- Key bindings. Add, modify or remove key bindings here.
 --
 myKeys conf@(XConfig {XMonad.modMask = modm}) =
-  --let traceCurrentTag = withWindowSet $ \ws -> trace ("currentTag: " ++ (W.currentTag ws))
-      --traceCurrentWin = withWindowSet $ \ws -> trace ("currentWin: " ++ (show (fromIntegral (maybe 0 id (W.peek ws)))))
-      --traceAllPids = withWindowSet $ \ws -> do res <- mapM (runQuery pid) (W.allWindows ws)
-                                               --names <- mapM (runQuery className) (W.allWindows ws)
-                                               --mapM_ (trace . show) $ zip names (map show (catMaybes res))
-  let jumpToTag = windows . W.greedyView
-      focusMast = windows W.focusMaster
-  in fromList $
+  fromList $
     -- launch a terminal
-    [ ((modm .|. shiftMask, xK_Return), do jumpToTag "web"
-                                           focusMast
-                                           spawn "tmux neww")
+    [ ((modm .|. shiftMask, xK_Return), withWindowSet $ \ws ->
+                                          do windows . W.greedyView $ "web"
+                                             urxvt <- findWindow (W.index ws) "URxvt"
+                                             maybe
+                                               (spawn $ XMonad.terminal conf)
+                                               (\w -> windows (W.focusWindow w))
+                                               urxvt
+                                             spawn "tmux neww")
 
     -- launch dmenu
     , ((modm,               xK_p     ), spawn "dmenu_run")
@@ -181,6 +180,12 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
     [((m .|. modm, key), screenWorkspace sc >>= flip whenJust (windows . f))
         | (key, sc) <- zip [xK_w, xK_e, xK_r] [0..]
         , (f, m) <- [(W.view, 0), (W.shift, shiftMask)]]
+    --
+    -- debugging keys
+    --
+    -- trace windows
+    --traceCurrentTag = withWindowSet $ \ws -> trace ("currentTag: " ++ (W.currentTag ws))
+    --traceCurrentWin = withWindowSet $ \ws -> trace ("currentWin: " ++ (show (fromIntegral (maybe 0 id (W.peek ws)))))
 
 
 ------------------------------------------------------------------------
@@ -319,12 +324,25 @@ myEventHook = mconcat [docksEventHook,fullscreenEventHook]
 -- By default, do nothing.
 myStartupHook conf = do setWMName "LG3D"
                         windows . W.greedyView $ "web"
-                        mapM_ spawn [ "steam"
-                                    , "mumble"
-                                    , "pidgin"
-                                    , "nc-mpc"
-                                    , XMonad.terminal conf
-                                    ]
+                        mapM_ (uncurry spawnMaybe)
+                          [ ("Aurora", "aurora")
+                          , ("URxvt", XMonad.terminal conf)
+                          , ("Steam", "steam")
+                          , ("Pidgin", "pidgin")
+                          , ("Mumble", "mumble")
+                          ]
+                        spawn "nc-mpc"
+
+spawnMaybe name command = withWindowSet $ \ws ->
+  do let tags = W.allWindows ws
+     tag <- findWindow tags name
+     maybe
+       (spawn command)
+       (\_ -> return ())
+       tag
+
+findWindow tags str = do names <- mapM (runQuery className) tags
+                         return . lookup str $ zip names tags
 
 ------------------------------------------------------------------------
 -- Status bar
