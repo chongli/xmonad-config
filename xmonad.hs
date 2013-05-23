@@ -272,6 +272,7 @@ myManageHook =
     <+> composeAll
     [ className =? "Mumble"                  --> doShift "steam"
     , className =? "Steam"                   --> doShift "steam"
+    , className =? "Aurora"                  --> doShift "web"
     , title     =? "Wine System Tray"        --> doHideIgnore
     , className =? "Epdfview"                --> doIgnore
     , title     =? "Emacs TEXTAREA"          --> doCenterFloat
