@@ -26,8 +26,10 @@ import XMonad.Hooks.ManageHelpers
 import XMonad.Hooks.SetWMName
 
 import XMonad.Layout.ComboP
+import XMonad.Layout.IM
 import XMonad.Layout.NoBorders
 import XMonad.Layout.PerWorkspace
+import XMonad.Layout.Reflect
 import XMonad.Layout.Renamed
 import XMonad.Layout.TwoPane
 
@@ -221,9 +223,10 @@ myMouseBindings (XConfig {XMonad.modMask = modm}) = fromList
 myLayout = onWorkspace "steam" steamL
          $ onWorkspace "media" media
          $ onWorkspace "web" basic
+         $ onWorkspace "gimp" gimpL
            basic
   where
-    --gimpLayout = combineTwoP (TwoPane 0.04 0.82) (tabbedLayout) (Full) (Not (Role "gimp-toolbox"))
+    gimpL   = withIM (0.11) (Role "gimp-toolbox") $ reflectHoriz $ withIM (0.15) (Role "gimp-dock") Full
     basic   = smartBorders . avoidStruts $ (tiled ||| Mirror tiled ||| Full)
     media   = smartBorders $ Full
     steamL  = noBorders    . avoidStruts . renamed [Replace "Steam"] $ steam
