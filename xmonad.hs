@@ -97,6 +97,9 @@ myKeys conf@(XConfig {XMonad.modMask = modm}) =
     , ((0,                  xK_F9    ), spawn "mpc prev")
     , ((0,                  xK_F10   ), spawn "mpc toggle")
     , ((0,                  xK_F11   ), spawn "mpc next")
+    , ((modm,               xK_F9    ), spawn "mpc volume -5")
+    , ((modm,               xK_F10   ), spawn "mpc random")
+    , ((modm,               xK_F11   ), spawn "mpc volume +5")
 
     -- launch gmrun
     , ((modm .|. shiftMask, xK_p     ), spawn "gmrun")
