@@ -286,6 +286,7 @@ myManageHook =
     , appName   =? "brogue"                  --> doFull  "media"
     , title     =? "Dungeons of Dredmor"     --> doFull  "media"
     , title     =? "Left 4 Dead 2 - OpenGL"  --> doFull  "media"
+    , title     =? "DOTA 2 - OpenGL"         --> doFull  "media"
     , className =? "Vlc"                     --> doFull  "media"
     , className =? "mplayer2"                --> doFull  "media"
     , className =? "Angband"                 --> doShift "gimp"
